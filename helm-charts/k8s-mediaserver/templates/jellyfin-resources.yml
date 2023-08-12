@@ -8,7 +8,7 @@ metadata:
 data:
   PGID: "{{ .Values.general.pgid }}"
   PUID: "{{ .Values.general.puid }}"
-  jellyfin_CLAIM: {{ .Values.jellyfin.claim }}
+  JELLYFIN_CLAIM: {{ .Values.jellyfin.claim }}
 ---
 ### DEPLOYMENT
 apiVersion: apps/v1
