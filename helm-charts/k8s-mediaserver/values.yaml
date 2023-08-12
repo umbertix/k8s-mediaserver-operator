@@ -268,8 +268,7 @@ plex:
   #  selector: {}
 
 jellyfin:
-  enabled: true
-  claim: "CHANGEME"
+  enabled: false
   replicaCount: 1
   container:
     image: docker.io/linuxserver/jellyfin
