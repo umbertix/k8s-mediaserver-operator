@@ -3,10 +3,10 @@ on:
   pull_request:
     types: [opened, reopened, edited, synchronize]
     paths:
-      - 'helm-charts/k8s-mediaserver/**'
-      - 'Dockerfile'
-      - 'Dockerfile-ARM64'
-      - 'k8s-mediaserver*'
+      - "helm-charts/k8s-mediaserver/**"
+      - "Dockerfile"
+      - "Dockerfile-ARM64"
+      - "k8s-mediaserver*"
   workflow_dispatch:
 
 jobs:
@@ -15,13 +15,13 @@ jobs:
     name: Run Helm linting
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Setup helm 
+
+      - name: Setup helm
         uses: azure/setup-helm@v3
         with:
-           version: 'v3.10.0' 
+          version: "v3.10.0"
         id: install-helm
-       
+
       - name: Lint Helm template
         run: helm template helm-charts/k8s-mediaserver
 
@@ -31,6 +31,7 @@ jobs:
     env:
       ingress_host: k8s-mediaserver.k8s.test
       plex_ingress_host: k8s-plex.k8s.test
+      jellyfin_ingress_host: k8s-jelly.k8s.test
       image_name: k8s-mediaserver-operator
     runs-on: ubuntu-latest
     steps:
@@ -44,7 +45,7 @@ jobs:
           file: ./Dockerfile
 
       - name: Fetch newer version of CRD
-        run: | 
+        run: |
           cp k8s-mediaserver.yml k8s-mediaserver-operator.yml tests/
           sed -i 's/accessMode: ""/accessMode: ReadWriteOnce/g' tests/k8s-mediaserver.yml
           sed -i 's/pvcStorageClass: ""/pvcStorageClass: standard/g' tests/k8s-mediaserver.yml
@@ -69,20 +70,22 @@ jobs:
         run: |
           kubectl apply -f k8s-mediaserver-operator.yml
           while [[ $(kubectl get pods -n k8s-mediaserver-operator-system -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "Waiting for operator pod to be ready" && sleep 5; done
-        
+
       - name: Deploy k8s-mediaserver CRD
         run: |
           kubectl create ns mediaserver
           kubectl apply -f tests/k8s-mediaserver.yml -n mediaserver
           sleep 15
           for pod in $(kubectl get pods -n mediaserver | awk 'NR>1{ print $1 }'); do while [[ $(kubectl get pods $pod -n mediaserver -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "Waiting for mediaserver pods to be ready" && sleep 10; done ; done
-     
+
       - name: Edit hosts file and test apps
         run: |
           sudo echo "127.0.0.1   ${{ env.plex_ingress_host }} ${{ env.ingress_host }}" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1   ${{ env.jellyfin_ingress_host }} ${{ env.ingress_host }}" | sudo tee -a /etc/hosts
           wget ${{ env.ingress_host }}/jackett
           wget ${{ env.ingress_host }}/sonarr
           wget ${{ env.ingress_host }}/radarr
           wget ${{ env.ingress_host }}/sabnzbd
-          wget ${{ env.ingress_host }}/prowlarr          
-          curl ${{ env.plex_ingress_host }} 
+          wget ${{ env.ingress_host }}/prowlarr
+          curl ${{ env.plex_ingress_host }}
+          curl ${{ env.jellyfin_ingress_host }}

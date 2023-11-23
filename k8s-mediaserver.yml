@@ -15,7 +15,7 @@ spec:
     pgid: 1000
     # Persistent storage selections and pathing
     storage:
-      customVolume: false  # set to true if not using a PVC (must provide volume below)
+      customVolume: false # set to true if not using a PVC (must provide volume below)
       pvcName: mediaserver-pvc
       size: 5Gi
       accessMode: ""

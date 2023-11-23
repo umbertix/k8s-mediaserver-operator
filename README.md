@@ -68,7 +68,7 @@ ARM - Raspberry Pi:
 kubectl apply -f k8s-mediaserver-operator-arm64.yml
 ```
 
-2. Install the custom resource:
+2. Install the custom resource with the default values:
 
 ```shell
 kubectl apply -f k8s-mediaserver.yml
@@ -85,14 +85,27 @@ With default settings, your applications will run in these paths:
 | Transmission | http://k8s-mediaserver.k8s.test/transmission |
 | Jackett      | http://k8s-mediaserver.k8s.test/jackett      |
 | Prowlarr     | http://k8s-mediaserver.k8s.test/prowlarr     |
-| Jellyfin     | http://k8s-jellyfin.k8s.test/                |
+| Jellyfin     | http://k8s-mediaserver.k8s.test/jellyfin     |
 | PLEX         | http://k8s-plex.k8s.test/                    |
+
+3. (Optional) Use custom values:
+
+If you want to use your custom setup for all the services:
+
+- Copy the default values files `cp ./helm-charts/k8s-mediaserver/values.yaml my-values.yaml`
+- Make all the changes you want in the new file `./helm-charts/k8s-mediaserver/my-values.yaml`
 
 With this value saved in the top level directory of this repo, running the below will add the resources to your cluster,
 under the helm release name `k8s-mediaserver`
 
 ```shell
 helm install -f my-values.yaml k8s-mediaserver ./helm-charts/k8s-mediaserver/
+```
+
+To make changes to the deploy
+
+```shell
+helm upgrade -f my-values.yaml k8s-mediaserver ./helm-charts/k8s-mediaserver/
 ```
 
 This is equivalent to running `mount {SERVER-IP}:/mount/path/on/nfs/server ...` in each container, where `...` is
@@ -111,6 +124,7 @@ letting some customization to fit the resource inside your cluster.
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | general.ingress_host                  | The hostname to use in ingress definition, this will be the hostname where the applications will be exposed | k8s-mediaserver.k8s.test                        |
 | general.plex_ingress_host             | The hostname to use for **PLEX** as it must be exposed on a / dedicated path                                | k8s-plex.k8s.test                               |
+| general.jellyfin_ingress_host         | The hostname to use for **JellyFin** as it must be exposed on a / dedicated path                            | k8s-jelly.k8s.test                              |
 | general.image_tag                     | The name of the image tag (arm32v7-latest, arm64v8-latest, development)                                     | latest                                          |
 | general.pgid                          | The GID for the process                                                                                     | 1000                                            |
 | general.puid                          | The UID for the process                                                                                     | 1000                                            |

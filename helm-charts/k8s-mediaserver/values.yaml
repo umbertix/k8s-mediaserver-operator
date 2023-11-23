@@ -5,6 +5,7 @@
 general:
   ingress_host: k8s-mediaserver.k8s.test
   plex_ingress_host: k8s-plex.k8s.test
+  jellyfin_ingress_host: k8s-jelly.k8s.test
   image_tag: latest
   # UID to run the process with
   puid: 1000
@@ -268,7 +269,7 @@ plex:
   #  selector: {}
 
 jellyfin:
-  enabled: false
+  enabled: true
   replicaCount: 1
   container:
     image: docker.io/linuxserver/jellyfin
