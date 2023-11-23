@@ -75,13 +75,13 @@ jobs:
 
       - name: Bump operator version in CRD
         run: |
-          sed -i "s/k8s-mediaserver-operator:${{ previous_tag }}/k8s-mediaserver-operator:${{ release_tag }}/g" k8s-mediaserver-operator.yml k8s-mediaserver-operator-arm64.yml
+          sed -i "s/k8s-mediaserver-operator:${{ needs.versioning.outputs.previous_tag }}/k8s-mediaserver-operator:${{ needs.versioning.outputs.release_tag }}/g" k8s-mediaserver-operator.yml k8s-mediaserver-operator-arm64.yml
 
       - name: Commit files
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git commit -a -m "Bumping operator definition to comply with ${{ release_version }}"
+          git commit -a -m "Bumping operator definition to comply with ${{ needs.versioning.outputs.release_version }}"
           
       - name: Push changes
         uses: ad-m/github-push-action@master

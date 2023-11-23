@@ -128,7 +128,7 @@ letting some customization to fit the resource inside your cluster.
 | general.image_tag                     | The name of the image tag (arm32v7-latest, arm64v8-latest, development)                                     | latest                                          |
 | general.pgid                          | The GID for the process                                                                                     | 1000                                            |
 | general.puid                          | The UID for the process                                                                                     | 1000                                            |
-| general.nodeSelector                  | Node Selector for all the pods                                                                              | {}                                              |
+| general.nodeSelector                  | Default Node Selector for all the pods. Per-service nodeSelectors are merged against this.                  | {}                                              |
 | general.storage.customVolume          | Flag if you want to supply your own volume and not use a PVC                                                | false                                           |
 | general.storage.pvcName               | Name of the persistenVolumeClaim configured in deployments                                                  | mediaserver-pvc                                 |
 | general.storage.accessMode            | Access mode for mediaserver PVC in case of single nodes                                                     | ReadWriteMany                                   |
@@ -150,6 +150,7 @@ letting some customization to fit the resource inside your cluster.
 | plex.enabled                            | Flag if you want to enable plex                                                                               | true                       |
 | plex.claim                              | **IMPORTANT** Token from your account, needed to claim the server                                             | CHANGEME                   |
 | plex.replicaCount                       | Number of replicas serving plex                                                                               | 1                          |
+| plex.container.nodeSelector             | Node Selector for the Plex pods                                                                               | {}                         |
 | plex.container.port                     | The port in use by the container                                                                              | 32400                      |
 | plex.container.image                    | The image used by the container                                                                               | docker.io/linuxserver/plex |
 | plex.container.tag                      | The tag used by the container                                                                                 | null                       |
@@ -165,28 +166,6 @@ letting some customization to fit the resource inside your cluster.
 | plex.ingress.tls.secretName             | Name of the secret holding certificates for the secure ingress                                                | ""                         |
 | plex.resources                          | Limits and Requests for the container                                                                         | {}                         |
 | plex.volume                             | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config | {}                         |
-
-### JellyFin
-
-| Config path                                 | Meaning                                                                                                       | Default                        |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| jellyfin.enabled                            | Flag if you want to enable plex                                                                               | false                          |
-| jellyfin.replicaCount                       | Number of replicas serving plex                                                                               | 1                              |
-| jellyfin.container.port                     | The port in use by the container                                                                              | 32400                          |
-| jellyfin.container.image                    | The image used by the container                                                                               | docker.io/linuxserver/jellyfin |
-| jellyfin.container.tag                      | The tag used by the container                                                                                 | null                           |
-| jellyfin.service.type                       | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                         | ClusterIP                      |
-| jellyfin.service.port                       | The port assigned to the service                                                                              | 8096                           |
-| jellyfin.service.nodePort                   | In case of service.type NodePort, the nodePort to use                                                         | ""                             |
-| jellyfin.service.extraLBService             | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)  | false                          |
-| jellyfin.service.extraLBService.annotations | Instead of using extraLBService as a bool, you can use it as a map to define annotations on the loadbalancer  | null                           |
-| jellyfin.ingress.enabled                    | If true, creates the ingress resource for the application                                                     | true                           |
-| jellyfin.ingress.annotations                | Additional field for annotations, if needed                                                                   | {}                             |
-| jellyfin.ingress.path                       | The path where the application is exposed                                                                     | /jellyfin                      |
-| jellyfin.ingress.tls.enabled                | If true, tls is enabled                                                                                       | false                          |
-| jellyfin.ingress.tls.secretName             | Name of the secret holding certificates for the secure ingress                                                | ""                             |
-| jellyfin.resources                          | Limits and Requests for the container                                                                         | {}                             |
-| jellyfin.volume                             | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config | {}                             |
 
 ### Sonarr
 
