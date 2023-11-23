@@ -85,7 +85,7 @@ With default settings, your applications will run in these paths:
 | Transmission | http://k8s-mediaserver.k8s.test/transmission |
 | Jackett      | http://k8s-mediaserver.k8s.test/jackett      |
 | Prowlarr     | http://k8s-mediaserver.k8s.test/prowlarr     |
-| Jellyfin     | http://k8s-mediaserver.k8s.test/jellyfin     |
+| Jellyfin     | http://k8s-jelly.k8s.test/                   |
 | PLEX         | http://k8s-plex.k8s.test/                    |
 
 3. (Optional) Use custom values:
@@ -147,9 +147,9 @@ letting some customization to fit the resource inside your cluster.
 
 | Config path                             | Meaning                                                                                                       | Default                    |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| plex.enabled                            | Flag if you want to enable plex                                                                               | true                       |
+| plex.enabled                            | Flag if you want to enable Plex                                                                               | true                       |
 | plex.claim                              | **IMPORTANT** Token from your account, needed to claim the server                                             | CHANGEME                   |
-| plex.replicaCount                       | Number of replicas serving plex                                                                               | 1                          |
+| plex.replicaCount                       | Number of replicas serving Plex                                                                               | 1                          |
 | plex.container.nodeSelector             | Node Selector for the Plex pods                                                                               | {}                         |
 | plex.container.port                     | The port in use by the container                                                                              | 32400                      |
 | plex.container.image                    | The image used by the container                                                                               | docker.io/linuxserver/plex |
@@ -171,8 +171,9 @@ letting some customization to fit the resource inside your cluster.
 
 | Config path                               | Meaning                                                                                                       | Default                      |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| sonarr.enabled                            | Flag if you want to enable sonarr                                                                             | true                         |
+| sonarr.enabled                            | Flag if you want to enable Sonarr                                                                             | true                         |
 | sonarr.container.port                     | The port in use by the container                                                                              | 8989                         |
+| sonarr.container.nodeSelector             | Node Selector for the Sonarr pods                                                                             | {}                           |
 | sonarr.container.image                    | The image used by the container                                                                               | docker.io/linuxserver/sonarr |
 | sonarr.container.tag                      | The tag used by the container                                                                                 | null                         |
 | sonarr.service.type                       | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                         | ClusterIP                    |
@@ -192,8 +193,9 @@ letting some customization to fit the resource inside your cluster.
 
 | Config path                               | Meaning                                                                                                       | Default                      |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| radarr.enabled                            | Flag if you want to enable radarr                                                                             | true                         |
+| radarr.enabled                            | Flag if you want to enable Radarr                                                                             | true                         |
 | radarr.container.port                     | The port in use by the container                                                                              | 7878                         |
+| radarr.container.nodeSelector             | Node Selector for the Radarr pods                                                                             | {}                           |
 | radarr.container.image                    | The image used by the container                                                                               | docker.io/linuxserver/radarr |
 | radarr.container.tag                      | The tag used by the container                                                                                 | null                         |
 | radarr.service.type                       | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                         | ClusterIP                    |
@@ -213,8 +215,9 @@ letting some customization to fit the resource inside your cluster.
 
 | Config path                                | Meaning                                                                                                         | Default                       |
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| jackett.enabled                            | Flag if you want to enable jackett                                                                              | true                          |
+| jackett.enabled                            | Flag if you want to enable Jackett                                                                              | true                          |
 | jackett.container.port                     | The port in use by the container                                                                                | 9117                          |
+| jackett.container.nodeSelector             | Node Selector for the Jackett pods                                                                              | {}                            |
 | jackett.container.image                    | The image used by the container                                                                                 | docker.io/linuxserver/jackett |
 | jackett.container.tag                      | The tag used by the container                                                                                   | null                          |
 | jackett.service.type                       | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                           | ClusterIP                     |
@@ -234,8 +237,9 @@ letting some customization to fit the resource inside your cluster.
 
 | Config path                                 | Meaning                                                                                                         | Default                        |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| prowlarr.enabled                            | Flag if you want to enable prowlarr                                                                             | true                           |
+| prowlarr.enabled                            | Flag if you want to enable Prowlarr                                                                             | true                           |
 | prowlarr.container.port                     | The port in use by the container                                                                                | 9117                           |
+| prowlarr.container.nodeSelector             | Node Selector for the Prowlarr pods                                                                             | {}                             |
 | prowlarr.container.image                    | The image used by the container                                                                                 | docker.io/linuxserver/prowlarr |
 | prowlarr.container.tag                      | The tag used by the container                                                                                   | develop                        |
 | prowlarr.service.type                       | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                           | ClusterIP                      |
@@ -255,14 +259,15 @@ letting some customization to fit the resource inside your cluster.
 
 | Config path                                     | Meaning                                                                                                       | Default                            |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| transmission.enabled                            | Flag if you want to enable transmission                                                                       | true                               |
+| transmission.enabled                            | Flag if you want to enable Transmission                                                                       | true                               |
 | transmission.container.port.utp                 | The port in use by the container                                                                              | 9091                               |
+| transmission.container.nodeSelector             | Node Selector for the Transmission pods                                                                       | {}                                 |
 | transmission.container.port.peer                | The port in use by the container for peer connection                                                          | 51413                              |
 | transmission.container.image                    | The image used by the container                                                                               | docker.io/linuxserver/transmission |
 | transmission.container.tag                      | The tag used by the container                                                                                 | null                               |
-| transmission.service.utp.type                   | The kind of Service (ClusterIP/NodePort/LoadBalancer) for transmission itself                                 | ClusterIP                          |
-| transmission.service.utp.port                   | The port assigned to the service for transmission itself                                                      | 9091                               |
-| transmission.service.utp.nodePort               | In case of service.type NodePort, the nodePort to use for transmission itself                                 | ""                                 |
+| transmission.service.utp.type                   | The kind of Service (ClusterIP/NodePort/LoadBalancer) for Transmission itself                                 | ClusterIP                          |
+| transmission.service.utp.port                   | The port assigned to the service for Transmission itself                                                      | 9091                               |
+| transmission.service.utp.nodePort               | In case of service.type NodePort, the nodePort to use for Transmission itself                                 | ""                                 |
 | transmission.service.utp.extraLBService         | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)  | false                              |
 | transmission.service.peer.type                  | The kind of Service (ClusterIP/NodePort/LoadBalancer) for peer port                                           | ClusterIP                          |
 | transmission.service.peer.port                  | The port assigned to the service for peer port                                                                | 51413                              |
@@ -275,9 +280,9 @@ letting some customization to fit the resource inside your cluster.
 | transmission.ingress.path                       | The path where the application is exposed                                                                     | /transmission                      |
 | transmission.ingress.tls.enabled                | If true, tls is enabled                                                                                       | false                              |
 | transmission.ingress.tls.secretName             | Name of the secret holding certificates for the secure ingress                                                | ""                                 |
-| transmission.config.auth.enabled                | Enables authentication for transmission                                                                       | false                              |
-| transmission.config.auth.username               | Username for transmission                                                                                     | ""                                 |
-| transmission.config.auth.password               | Password for transmission                                                                                     | ""                                 |
+| transmission.config.auth.enabled                | Enables authentication for Transmission                                                                       | false                              |
+| transmission.config.auth.username               | Username for Transmission                                                                                     | ""                                 |
+| transmission.config.auth.password               | Password for Transmission                                                                                     | ""                                 |
 | transmission.resources                          | Limits and Requests for the container                                                                         | {}                                 |
 | transmission.volume                             | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config | {}                                 |
 
@@ -285,14 +290,15 @@ letting some customization to fit the resource inside your cluster.
 
 | Config path                                | Meaning                                                                                                       | Default                       |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| sabnzbd.enabled                            | Flag if you want to enable sabnzbd                                                                            | true                          |
+| sabnzbd.enabled                            | Flag if you want to enable Sabnzbd                                                                            | true                          |
+| sabnzbd.container.nodeSelector             | Node Selector for the Sabnzbd pods                                                                            | {}                            |
 | sabnzbd.container.port.http                | The port in use by the container                                                                              | 8080                          |
 | sabnzbd.container.port.https               | The port in use by the container for peer connection                                                          | 9090                          |
 | sabnzbd.container.image                    | The image used by the container                                                                               | docker.io/linuxserver/sabnzbd |
 | sabnzbd.container.tag                      | The tag used by the container                                                                                 | null                          |
-| sabnzbd.service.http.type                  | The kind of Service (ClusterIP/NodePort/LoadBalancer) for sabnzbd itself                                      | ClusterIP                     |
-| sabnzbd.service.http.port                  | The port assigned to the service for sabnzbd itself                                                           | 9091                          |
-| sabnzbd.service.http.nodePort              | In case of service.type NodePort, the nodePort to use for sabnzbd itself                                      | ""                            |
+| sabnzbd.service.http.type                  | The kind of Service (ClusterIP/NodePort/LoadBalancer) for Sabnzbd itself                                      | ClusterIP                     |
+| sabnzbd.service.http.port                  | The port assigned to the service for Sabnzbd itself                                                           | 9091                          |
+| sabnzbd.service.http.nodePort              | In case of service.type NodePort, the nodePort to use for Sabnzbd itself                                      | ""                            |
 | sabnzbd.service.http.extraLBService        | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)  | false                         |
 | sabnzbd.service.https.type                 | The kind of Service (ClusterIP/NodePort/LoadBalancer) for https port                                          | ClusterIP                     |
 | sabnzbd.service.https.port                 | The port assigned to the service for peer port                                                                | 51413                         |
