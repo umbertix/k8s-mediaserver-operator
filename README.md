@@ -11,7 +11,7 @@ based on:
 [Plex Media Server](https://www.plex.tv/ "Plex Media Server") - A complete and fully funtional mediaserver that allows
 you to render in a webUI your movies, TV Series, podcasts, video streams.
 
-[Jellygin](https://jellyfin.org/ "JellyFin") - It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps
+[Jellyfin](https://jellyfin.org/ "JellyFin") - It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps
 
 [Sonarr](https://sonarr.tv/ "Sonarr") - A TV series and show tracker, that allows the integration with download managers
 for searching and retrieving TV Series, organizing them, schedule notifications when an episode comes up and much more.
