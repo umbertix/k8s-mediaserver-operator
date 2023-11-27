@@ -5,7 +5,6 @@ on:
     paths:
       - "helm-charts/k8s-mediaserver/**"
       - "Dockerfile"
-      - "Dockerfile-ARM64"
       - "k8s-mediaserver*"
   workflow_dispatch:
 
@@ -19,7 +18,7 @@ jobs:
       - name: Setup helm
         uses: azure/setup-helm@v3
         with:
-          version: "v3.10.0"
+          version: "v3.13.0"
         id: install-helm
 
       - name: Lint Helm template
@@ -86,6 +85,6 @@ jobs:
           wget ${{ env.ingress_host }}/sonarr
           wget ${{ env.ingress_host }}/radarr
           wget ${{ env.ingress_host }}/sabnzbd
-          wget ${{ env.ingress_host }}/prowlarr          
+          wget ${{ env.ingress_host }}/prowlarr
           curl ${{ env.plex_ingress_host }}
           curl ${{ env.jellyfin_ingress_host }}
