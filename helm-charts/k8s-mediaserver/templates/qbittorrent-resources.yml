@@ -167,7 +167,7 @@ spec:
     - port: {{ .Values.qbittorrent.service.webui.port }}
       targetPort: {{ .Values.qbittorrent.container.port.webui }}
       protocol: TCP
-      name: qbittorrent-port
+      name: qbit
 {{ if eq .Values.qbittorrent.service.webui.type "NodePort" }}
       nodePort: {{ .Values.qbittorrent.service.webui.nodePort }}
 {{ end }}
@@ -292,15 +292,15 @@ spec:
 {{- if .Values.qbittorrent.ingress.tls.enabled }}
   tls:
     - hosts:
-        - {{ .Values.general.ingress_host | quote }}
+        - {{ .Values.general.qbittorrent_ingress_host | quote }}
       secretName: {{ .Values.qbittorrent.ingress.tls.secretName }}
 {{ end }}
   ingressClassName: {{ .Values.general.ingress.ingressClassName }}
   rules:
-    - host: {{ .Values.general.ingress_host | quote }}
+    - host: {{ .Values.general.qbittorrent_ingress_host | quote }}
       http:
         paths:
-          - path: {{ .Values.qbittorrent.ingress.path }}
+          - path: /
             pathType: Prefix
             backend:
               service:

@@ -6,6 +6,7 @@ general:
   ingress_host: k8s-mediaserver.k8s.test
   plex_ingress_host: k8s-plex.k8s.test
   jellyfin_ingress_host: k8s-jelly.k8s.test
+  qbittorrent_ingress_host: qbit.k8s.test
   image_tag: latest
   podDistribution: cluster # can be "spread" or "cluster"
   # UID to run the process with
@@ -354,15 +355,10 @@ qbittorrent:
   ingress:
     enabled: true
     annotations: {}
-    path: /qbittorrent
+    path: /
     tls:
       enabled: false
       secretName: ""
-  config:
-    auth:
-      enabled: false
-      username: ""
-      password: ""
   resources: {}
   volume: {}
   #  name: pvc-transmission-config
