@@ -25,6 +25,8 @@ trackers for torrents.
 
 [Transmission](https://transmissionbt.com/ "Transmission") - A fast, easy and reliable torrent client.
 
+[QBittorrent](https://www.qbittorrent.org/ "QBittorrent") - Another fast, easy and reliable torrent client.
+
 [Sabnzbd](https://sabnzbd.org/ "Sabnzbd") - A free and easy binary newsreader.
 
 All container images used by the operator are from [linuxserver](https://github.com/linuxserver)
@@ -352,6 +354,10 @@ plex:
       annotations:
         service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags:
 ```
+
+### QBittorrent initial login
+
+The configuration does not have a setup for user and config at this point, to see the password that is dinamically generated on the first instance check the logs of the pod
 
 ## About the project
 
