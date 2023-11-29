@@ -1,5 +1,28 @@
 {{- if .Values.qbittorrent.enabled -}}
 ---
+## INIT-CONTAINER
+apiVersion: v1
+data:
+  categories.json: |
+    {
+        "Movies": {
+            "save_path": "/movies"
+        },
+        "TV": {
+            "save_path": "/tv"
+        }
+    }
+  init-qbittorrent.sh: |
+    #!/bin/bash
+    echo "### Initializing categories ###"
+    if [ ! -f /qbittorrent-config/categories.json ]; then
+      cp -n /init-qbittorrent/categories.json /qbittorrent-config/categories.json
+      echo "### No configuration found, intialized with default settings ###"
+    fi
+kind: ConfigMap
+metadata:
+  name: init-qbittorrent-cm
+---
 ### CONFIGMAP
 apiVersion: v1
 kind: ConfigMap
@@ -29,6 +52,24 @@ spec:
         {{- include "k8s-mediaserver.selectorLabels" . | nindent 8 }}
         app: qbittorrent
     spec:
+      initContainers:
+        - name: config-qbittorrent
+          image: docker.io/ubuntu:groovy
+          command: ["/init-qbittorrent/init-qbittorrent.sh"]
+          volumeMounts:
+            - mountPath: /init-qbittorrent
+              name: init-files-qbittorrent
+          {{- if .Values.qbittorrent.volume }}
+            - name: {{ .Values.qbittorrent.volume.name }}
+              mountPath: /qbittorrent-config
+          {{- else }}
+            - name: mediaserver-volume
+              mountPath: /qbittorrent-config
+              subPath: "{{ .Values.general.storage.subPaths.config }}/qBittorrent"
+          {{- end }}
+          securityContext:
+            runAsUser: {{ .Values.general.puid }}
+            runAsGroup: {{ .Values.general.pgid }}
       containers:
         - name: {{ .Chart.Name }}
           envFrom:
