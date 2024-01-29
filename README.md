@@ -167,6 +167,29 @@ letting some customization to fit the resource inside your cluster.
 | plex.resources                          | Limits and Requests for the container                                                                         | {}                         |
 | plex.volume                             | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config | {}                         |
 
+### Jellyfin
+
+| Config path                                 | Meaning                                                                                                           | Default                        |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| jellyfin.enabled                            | Flag if you want to enable Plex                                                                                   | true                           |
+| jellyfin.replicaCount                       | Number of replicas serving Plex                                                                                   | 1                              |
+| jellyfin.container.nodeSelector             | Node Selector for the Plex pods                                                                                   | {}                             |
+| jellyfin.container.port                     | The port in use by the container                                                                                  | 8096                           |
+| jellyfin.container.image                    | The image used by the container                                                                                   | docker.io/linuxserver/jellyfin |
+| jellyfin.container.tag                      | The tag used by the container                                                                                     | null                           |
+| jellyfin.service.type                       | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                             | ClusterIP                      |
+| jellyfin.service.port                       | The port assigned to the service                                                                                  | 8096                           |
+| jellyfin.service.nodePort                   | In case of service.type NodePort, the nodePort to use                                                             | ""                             |
+| jellyfin.service.extraLBService             | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)      | false                          |
+| jellyfin.service.extraLBService.annotations | Instead of using extraLBService as a bool, you can use it as a map to define annotations on the loadbalancer      | null                           |
+| jellyfin.ingress.enabled                    | If true, creates the ingress resource for the application                                                         | true                           |
+| jellyfin.ingress.annotations                | Additional field for annotations, if needed                                                                       | {}                             |
+| jellyfin.ingress.path                       | The path where the application is exposed                                                                         | /jellyfin                      |
+| jellyfin.ingress.tls.enabled                | If true, tls is enabled                                                                                           | false                          |
+| jellyfin.ingress.tls.secretName             | Name of the secret holding certificates for the secure ingress                                                    | ""                             |
+| jellyfin.resources                          | Limits and Requests for the container                                                                             | {}                             |
+| jellyfin.volume                             | If set, Jellyfin will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config | {}                             |
+
 ### Sonarr
 
 | Config path                               | Meaning                                                                                                       | Default                      |

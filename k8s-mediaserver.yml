@@ -284,3 +284,39 @@ spec:
     #  accessModes: ReadWriteOnce
     #  storage: 5Gi
     #  selector: {}
+
+  jellyfin:
+    enabled: false
+    replicaCount: 1
+    container:
+      image: docker.io/linuxserver/jellyfin
+      nodeSelector: {}
+      port: 8096
+    service:
+      type: ClusterIP
+      port: 8096
+      nodePort:
+      # Defines an additional LB service, requires cloud provider service or MetalLB
+      extraLBService: false
+      extraLBAnnotations: {}
+    ingress:
+      enabled: true
+      annotations: {}
+      tls:
+        enabled: false
+        secretName: ""
+    resources: {}
+    #  limits:
+    #    cpu: 100m
+    #    memory: 100Mi
+    #  requests:
+    #    cpu: 100m
+    #    memory: 100Mi
+    volume: {}
+    #  name: pvc-plex-config
+    #  storageClassName: longhorn
+    #  annotations: {}
+    #  labels: {}
+    #  accessModes: ReadWriteOnce
+    #  storage: 5Gi
+    #  selector: {}
