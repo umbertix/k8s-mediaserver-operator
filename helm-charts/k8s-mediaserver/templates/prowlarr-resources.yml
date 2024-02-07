@@ -36,6 +36,8 @@ metadata:
   labels:
     {{- include "k8s-mediaserver.labels" . | nindent 4 }}
 spec:
+  strategy:
+    type: Recreate
   replicas: 1
   selector:
     matchLabels:
@@ -72,10 +74,12 @@ spec:
           image: "{{ .Values.prowlarr.container.image }}:{{ .Values.prowlarr.container.tag | default .Values.general.image_tag }}"
           imagePullPolicy: Always
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: "{{ .Values.prowlarr.ingress.path }}/ping"
               port: {{ .Values.prowlarr.container.port }}
             initialDelaySeconds: 10
             periodSeconds: 20
+            timeoutSeconds: 20
           ports:
             - name: prowlarr-port
               containerPort: {{ .Values.prowlarr.container.port }}
@@ -111,9 +115,31 @@ spec:
           configMap:
             defaultMode: 493
             name: init-prowlarr-cm
-      {{- with .Values.general.nodeSelector }}
+      {{- with merge .Values.prowlarr.container.nodeSelector .Values.general.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if eq .Values.general.podDistribution "cluster" }}
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/instance
+                  operator: In
+                  values:
+                  - {{ .Release.Name }}
+              topologyKey: "kubernetes.io/hostname"
+            weight: 100
+      {{- else if eq .Values.general.podDistribution "spread" }}
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: "ScheduleAnyway"
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: {{ .Release.Name }}
       {{- end }}
 ---
 ### SERVICES
@@ -142,8 +168,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: prowlarr-lb
+  {{- with .Values.prowlarr.service.extraLBAnnotations }}
   annotations:
-    {{- include .Values.prowlarr.service.extraLBService.annotations . | nindent 4 }}
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "k8s-mediaserver.labels" . | nindent 4 }}
 spec:

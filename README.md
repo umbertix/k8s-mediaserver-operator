@@ -114,7 +114,7 @@ letting some customization to fit the resource inside your cluster.
 | general.image_tag                     | The name of the image tag (arm32v7-latest, arm64v8-latest, development)                                     | latest                                          |
 | general.pgid                          | The GID for the process                                                                                     | 1000                                            |
 | general.puid                          | The UID for the process                                                                                     | 1000                                            |
-| general.nodeSelector                  | Node Selector for all the pods                                                                              | {}                                              |
+| general.nodeSelector                  | Default Node Selector for all the pods. Per-service nodeSelectors are merged against this.                  | {}                                              |
 | general.storage.customVolume          | Flag if you want to supply your own volume and not use a PVC                                                | false                                           |
 | general.storage.pvcName               | Name of the persistenVolumeClaim configured in deployments                                                  | mediaserver-pvc                                 |
 | general.storage.accessMode            | Access mode for mediaserver PVC in case of single nodes                                                     | ReadWriteMany                                   |
@@ -130,27 +130,7 @@ letting some customization to fit the resource inside your cluster.
 | general.ingress.ingressClassName      | Reference an IngressClass resource that contains additional Ingress configuration                           | ""                                              |
 
 ### Plex
-
-| Config path                             | Meaning                                                                                                       | Default                    |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| plex.enabled                            | Flag if you want to enable plex                                                                               | true                       |
-| plex.claim                              | **IMPORTANT** Token from your account, needed to claim the server                                             | CHANGEME                   |
-| plex.replicaCount                       | Number of replicas serving plex                                                                               | 1                          |
-| plex.container.port                     | The port in use by the container                                                                              | 32400                      |
-| plex.container.image                    | The image used by the container                                                                               | docker.io/linuxserver/plex |
-| plex.container.tag                      | The tag used by the container                                                                                 | null                       |
-| plex.service.type                       | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                         | ClusterIP                  |
-| plex.service.port                       | The port assigned to the service                                                                              | 32400                      |
-| plex.service.nodePort                   | In case of service.type NodePort, the nodePort to use                                                         | ""                         |
-| plex.service.extraLBService             | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)  | false                      |
-| plex.service.extraLBService.annotations | Instead of using extraLBService as a bool, you can use it as a map to define annotations on the loadbalancer  | null                       |
-| plex.ingress.enabled                    | If true, creates the ingress resource for the application                                                     | true                       |
-| plex.ingress.annotations                | Additional field for annotations, if needed                                                                   | {}                         |
-| plex.ingress.path                       | The path where the application is exposed                                                                     | /plex                      |
-| plex.ingress.tls.enabled                | If true, tls is enabled                                                                                       | false                      |
-| plex.ingress.tls.secretName             | Name of the secret holding certificates for the secure ingress                                                | ""                         |
-| plex.resources                          | Limits and Requests for the container                                                                         | {}                         |
-| plex.volume                             | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config | {}                         |
+               | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config | {}                         |
 
 ### JellyFin
 
@@ -313,6 +293,174 @@ letting some customization to fit the resource inside your cluster.
 | sabnzbd.ingress.tls.secretName             | Name of the secret holding certificates for the secure ingress                                                | ""                            |
 | sabnzbd.resources                          | Limits and Requests for the container                                                                         | {}                            |
 | sabnzbd.volume                             | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config | {}                            |
+=======
+| Config path                               | Meaning                                                                                                       | Default   | 
+|-------------------------------------------|---------------------------------------------------------------------------------------------------------------|-----------|
+| plex.enabled                              | Flag if you want to enable plex                                                                               | true      | 
+| plex.claim                                | **IMPORTANT** Token from your account, needed to claim the server                                             | CHANGEME  |
+| plex.replicaCount                         | Number of replicas serving plex                                                                               | 1         | 
+| plex.container.nodeSelector               | Node Selector for the Plex pods                                                                               | {}        |
+| plex.container.port                       | The port in use by the container                                                                              | 32400     | 
+| plex.container.image                      | The image used by the container                                                                               | docker.io/linuxserver/plex |
+| plex.container.tag                        | The tag used by the container                                                                                 | null      | 
+| plex.service.type                         | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                         | ClusterIP |
+| plex.service.port                         | The port assigned to the service                                                                              | 32400     |
+| plex.service.nodePort                     | In case of service.type NodePort, the nodePort to use                                                         | ""        |
+| plex.service.extraLBService               | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)  | false     |
+| plex.service.extraLBService.annotations   | Instead of using extraLBService as a bool, you can use it as a map to define annotations on the loadbalancer  | null      | 
+| plex.ingress.enabled                      | If true, creates the ingress resource for the application                                                     | true      |
+| plex.ingress.annotations                  | Additional field for annotations, if needed                                                                   | {}        |
+| plex.ingress.path                         | The path where the application is exposed                                                                     | /plex     |
+| plex.ingress.tls.enabled                  | If true, tls is enabled                                                                                       | false     |
+| plex.ingress.tls.secretName               | Name of the secret holding certificates for the secure ingress                                                | ""        |
+| plex.resources                            | Limits and Requests for the container                                                                         | {}        | 
+| plex.volume                               | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config | {}        |
+
+### Sonarr
+
+| Config path                                 | Meaning                                                                                                        | Default   | 
+|---------------------------------------------|----------------------------------------------------------------------------------------------------------------|-----------|
+| sonarr.enabled                              | Flag if you want to enable sonarr                                                                              | true      | 
+| sonarr.container.nodeSelector               | Node Selector for the Sonarr pods                                                                              | {}        |
+| sonarr.container.port                       | The port in use by the container                                                                               | 8989      | 
+| sonarr.container.image                      | The image used by the container                                                                                | docker.io/linuxserver/sonarr |
+| sonarr.container.tag                        | The tag used by the container                                                                                  | null      | 
+| sonarr.service.type                         | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                          | ClusterIP |
+| sonarr.service.port                         | The port assigned to the service                                                                               | 8989      |
+| sonarr.service.nodePort                     | In case of service.type NodePort, the nodePort to use                                                          | ""        |
+| sonarr.service.extraLBService               | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)   | false     |
+| sonarr.service.extraLBService.annotations   | Instead of using extraLBService as a bool, you can use it as a map to define annotations on the loadbalancer   | null      |
+| sonarr.ingress.enabled                      | If true, creates the ingress resource for the application                                                      | true      |
+| sonarr.ingress.annotations                  | Additional field for annotations, if needed                                                                    | {}        |
+| sonarr.ingress.path                         | The path where the application is exposed                                                                      | /sonarr   |
+| sonarr.ingress.tls.enabled                  | If true, tls is enabled                                                                                        | false     |
+| sonarr.ingress.tls.secretName               | Name of the secret holding certificates for the secure ingress                                                 | ""        | 
+| sonarr.resources                            | Limits and Requests for the container                                                                          | {}        |
+| sonarr.volume                               | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config  | {}        |
+
+### Radarr
+
+| Config path                                 | Meaning                                                                                                        | Default   | 
+|---------------------------------------------|----------------------------------------------------------------------------------------------------------------|-----------|
+| radarr.enabled                              | Flag if you want to enable radarr                                                                              | true      | 
+| radarr.container.nodeSelector               | Node Selector for the Radarr pods                                                                              | {}        |
+| radarr.container.port                       | The port in use by the container                                                                               | 7878      | 
+| radarr.container.image                      | The image used by the container                                                                                | docker.io/linuxserver/radarr |
+| radarr.container.tag                        | The tag used by the container                                                                                  | null      |
+| radarr.service.type                         | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                          | ClusterIP |
+| radarr.service.port                         | The port assigned to the service                                                                               | 7878      |
+| radarr.service.nodePort                     | In case of service.type NodePort, the nodePort to use                                                          | ""        |
+| radarr.service.extraLBService               | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)   | false     |
+| radarr.service.extraLBService.annotations   | Instead of using extraLBService as a bool, you can use it as a map to define annotations on the loadbalancer   | null      | 
+| radarr.ingress.enabled                      | If true, creates the ingress resource for the application                                                      | true      |
+| radarr.ingress.annotations                  | Additional field for annotations, if needed                                                                    | {}        |
+| radarr.ingress.path                         | The path where the application is exposed                                                                      | /radarr   |
+| radarr.ingress.tls.enabled                  | If true, tls is enabled                                                                                        | false     |
+| radarr.ingress.tls.secretName               | Name of the secret holding certificates for the secure ingress                                                 | ""        | 
+| radarr.resources                            | Limits and Requests for the container                                                                          | {}        |
+| radarr.volume                               | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config  | {}        |
+
+### Jackett
+
+| Config path                                 | Meaning                                                                                                         | Default   | 
+|---------------------------------------------|-----------------------------------------------------------------------------------------------------------------|-----------|
+| jackett.enabled                             | Flag if you want to enable jackett                                                                              | true      | 
+| jackett.container.nodeSelector              | Node Selector for the Jackett pods                                                                              | {}        |
+| jackett.container.port                      | The port in use by the container                                                                                | 9117      | 
+| jackett.container.image                     | The image used by the container                                                                                 | docker.io/linuxserver/jackett |
+| jackett.container.tag                       | The tag used by the container                                                                                   | null      |
+| jackett.service.type                        | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                           | ClusterIP |
+| jackett.service.port                        | The port assigned to the service                                                                                | 9117      |
+| jackett.service.nodePort                    | In case of service.type NodePort, the nodePort to use                                                           | ""        |
+| jackett.service.extraLBService              | If true, it creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB) | false     | 
+| jackett.service.extraLBService.annotations  | Instead of using extraLBService as a bool, you can use it as a map to define annotations on the loadbalancer    | null      |
+| jackett.ingress.enabled                     | If true, creates the ingress resource for the application                                                       | true      |
+| jackett.ingress.annotations                 | Additional field for annotations, if needed                                                                     | {}        |
+| jackett.ingress.path                        | The path where the application is exposed                                                                       | /jackett  |
+| jackett.ingress.tls.enabled                 | If true, tls is enabled                                                                                         | false     |
+| jackett.ingress.tls.secretName              | Name of the secret holding certificates for the secure ingress                                                  | ""        | 
+| jackett.resources                           | Limits and Requests for the container                                                                           | {}        |
+| jackett.volume                              | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config   | {}        |
+
+### Prowlarr
+
+| Config path                                   | Meaning                                                                                                         | Default   | 
+|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------|-----------|
+| prowlarr.enabled                              | Flag if you want to enable prowlarr                                                                             | true      | 
+| prowlarr.container.nodeSelector               | Node Selector for the Prowlarr pods                                                                             | {}        |
+| prowlarr.container.port                       | The port in use by the container                                                                                | 9117      | 
+| prowlarr.container.image                      | The image used by the container                                                                                 | docker.io/linuxserver/prowlarr |
+| prowlarr.container.tag                        | The tag used by the container                                                                                   | develop   |
+| prowlarr.service.type                         | The kind of Service (ClusterIP/NodePort/LoadBalancer)                                                           | ClusterIP |
+| prowlarr.service.port                         | The port assigned to the service                                                                                | 9117      |
+| prowlarr.service.nodePort                     | In case of service.type NodePort, the nodePort to use                                                           | ""        |
+| prowlarr.service.extraLBService               | If true, it creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB) | false     |
+| prowlarr.service.extraLBService.annotations   | Instead of using extraLBService as a bool, you can use it as a map to define annotations on the loadbalancer    | null      | 
+| prowlarr.ingress.enabled                      | If true, creates the ingress resource for the application                                                       | true      |
+| prowlarr.ingress.annotations                  | Additional field for annotations, if needed                                                                     | {}        |
+| prowlarr.ingress.path                         | The path where the application is exposed                                                                       | /prowlarr |
+| prowlarr.ingress.tls.enabled                  | If true, tls is enabled                                                                                         | false     |
+| prowlarr.ingress.tls.secretName               | Name of the secret holding certificates for the secure ingress                                                  | ""        | 
+| prowlarr.resources                            | Limits and Requests for the container                                                                           | {}        |
+| prowlarr.volume                               | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config   | {}        |
+
+### Transmission
+
+| Config path                                       | Meaning                                                                                                        | Default       | 
+|---------------------------------------------------|----------------------------------------------------------------------------------------------------------------|---------------|
+| transmission.enabled                              | Flag if you want to enable transmission                                                                        | true          | 
+| transmission.container.nodeSelector               | Node Selector for the Transmission pods                                                                        | {}        |
+| transmission.container.port.utp                   | The port in use by the container                                                                               | 9091          | 
+| transmission.container.port.peer                  | The port in use by the container for peer connection                                                           | 51413         | 
+| transmission.container.image                      | The image used by the container                                                                                | docker.io/linuxserver/transmission |
+| transmission.container.tag                        | The tag used by the container                                                                                  | null          |
+| transmission.service.utp.type                     | The kind of Service (ClusterIP/NodePort/LoadBalancer) for transmission itself                                  | ClusterIP     |
+| transmission.service.utp.port                     | The port assigned to the service for transmission itself                                                       | 9091          |
+| transmission.service.utp.nodePort                 | In case of service.type NodePort, the nodePort to use for transmission itself                                  | ""            |
+| transmission.service.utp.extraLBService           | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)   | false         | 
+| transmission.service.peer.type                    | The kind of Service (ClusterIP/NodePort/LoadBalancer) for peer port                                            | ClusterIP     |
+| transmission.service.peer.port                    | The port assigned to the service for peer port                                                                 | 51413         |
+| transmission.service.peer.nodePort                | In case of service.type NodePort, the nodePort to use for peer port                                            | ""            |
+| transmission.service.peer.nodePortUDP             | In case of service.type NodePort, the nodePort to use for peer port UDP service                                | ""            |
+| transmission.service.peer.extraLBService          | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)   | false         |
+| transmission.service.extraLBService.annotations   | Instead of using extraLBService as a bool, you can use it as a map to define annotations on the loadbalancer   | null          | 
+| transmission.ingress.enabled                      | If true, creates the ingress resource for the application                                                      | true          |
+| transmission.ingress.annotations                  | Additional field for annotations, if needed                                                                    | {}            |
+| transmission.ingress.path                         | The path where the application is exposed                                                                      | /transmission |
+| transmission.ingress.tls.enabled                  | If true, tls is enabled                                                                                        | false         |
+| transmission.ingress.tls.secretName               | Name of the secret holding certificates for the secure ingress                                                 | ""            |
+| transmission.config.auth.enabled                  | Enables authentication for transmission                                                                        | false         |
+| transmission.config.auth.username                 | Username for transmission                                                                                      | ""            |
+| transmission.config.auth.password                 | Password for transmission                                                                                      | ""            | 
+| transmission.resources                            | Limits and Requests for the container                                                                          | {}            |
+| transmission.volume                               | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config  | {}            |
+
+### Sabnzbd
+
+| Config path                                 | Meaning                                                                                                        | Default   | 
+|---------------------------------------------|----------------------------------------------------------------------------------------------------------------|-----------|
+| sabnzbd.enabled                             | Flag if you want to enable sabnzbd                                                                             | true      | 
+| sabnzbd.container.nodeSelector              | Node Selector for the Sabnzbd pods                                                                             | {}        |
+| sabnzbd.container.port.http                 | The port in use by the container                                                                               | 8080      | 
+| sabnzbd.container.port.https                | The port in use by the container for peer connection                                                           | 9090      | 
+| sabnzbd.container.image                     | The image used by the container                                                                                | docker.io/linuxserver/sabnzbd |
+| sabnzbd.container.tag                       | The tag used by the container                                                                                  | null      |
+| sabnzbd.service.http.type                   | The kind of Service (ClusterIP/NodePort/LoadBalancer) for sabnzbd itself                                       | ClusterIP |
+| sabnzbd.service.http.port                   | The port assigned to the service for sabnzbd itself                                                            | 9091      |
+| sabnzbd.service.http.nodePort               | In case of service.type NodePort, the nodePort to use for sabnzbd itself                                       | ""        |
+| sabnzbd.service.http.extraLBService         | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)   | false     | 
+| sabnzbd.service.https.type                  | The kind of Service (ClusterIP/NodePort/LoadBalancer) for https port                                           | ClusterIP |
+| sabnzbd.service.https.port                  | The port assigned to the service for peer port                                                                 | 51413     |
+| sabnzbd.service.https.nodePort              | In case of service.type NodePort, the nodePort to use for https port                                           | ""        |
+| sabnzbd.service.https.extraLBService        | If true, creates an additional LoadBalancer service with '-lb' suffix (requires a cloud provider or metalLB)   | false     |
+| sabnzbd.service.extraLBService.annotations  | Instead of using extraLBService as a bool, you can use it as a map to define annotations on the loadbalancer   | null      | 
+| sabnzbd.ingress.enabled                     | If true, creates the ingress resource for the application                                                      | true      |
+| sabnzbd.ingress.annotations                 | Additional field for annotations, if needed                                                                    | {}        |
+| sabnzbd.ingress.path                        | The path where the application is exposed                                                                      | /sabnzbd  |
+| sabnzbd.ingress.tls.enabled                 | If true, tls is enabled                                                                                        | false     |
+| sabnzbd.ingress.tls.secretName              | Name of the secret holding certificates for the secure ingress                                                 | ""        | 
+| sabnzbd.resources                           | Limits and Requests for the container                                                                          | {}        |
+| sabnzbd.volume                              | If set, Plex will create a PVC for it's config volume, else it will be put on general.storage.subPaths.config  | {}        |
 
 ## Helpful use-cases
 
