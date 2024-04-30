@@ -1,0 +1,153 @@
+{{ if .Values.flaresolverr.enabled }}
+---
+### DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaresolverr
+  labels:
+    {{- include "k8s-mediaserver.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "k8s-mediaserver.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "k8s-mediaserver.selectorLabels" . | nindent 8 }}
+        app: flaresolverr
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.flaresolverr.container.image }}:{{ .Values.flaresolverr.container.tag | default .Values.general.image_tag }}"
+          imagePullPolicy: Always
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.flaresolverr.container.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          ports:
+            - name: flrslvr-port
+              containerPort: {{ .Values.flaresolverr.container.port }}
+              protocol: TCP
+          {{- with .Values.flaresolverr.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with merge .Values.flaresolverr.container.nodeSelector .Values.general.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if eq .Values.general.podDistribution "cluster" }}
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/instance
+                  operator: In
+                  values:
+                  - {{ .Release.Name }}
+              topologyKey: "kubernetes.io/hostname"
+            weight: 100
+      {{- else if eq .Values.general.podDistribution "spread" }}
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: "ScheduleAnyway"
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- end }}
+---
+### SERVICES
+apiVersion: v1
+kind: Service
+metadata:
+  name: flaresolverr
+  labels:
+    {{- include "k8s-mediaserver.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.flaresolverr.service.type }}
+  ports:
+    - port: {{ .Values.flaresolverr.service.port }}
+      targetPort: {{ .Values.flaresolverr.container.port }}
+      protocol: TCP
+{{ if eq .Values.flaresolverr.service.type "NodePort" }}
+      nodePort: {{ .Values.flaresolverr.service.nodePort }}
+{{ end }}
+      name: flrslvr-port
+  selector:
+    app: flaresolverr
+
+---
+{{ if .Values.flaresolverr.service.extraLBService }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: flaresolverr-lb
+  {{- with .Values.flaresolverr.service.extraLBAnnotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "k8s-mediaserver.labels" . | nindent 4 }}
+spec:
+  type: LoadBalancer
+  ports:
+    - port: {{ .Values.flaresolverr.service.port }}
+      targetPort: {{ .Values.flaresolverr.container.port }}
+      protocol: TCP
+      name: flrslvr-port
+  selector:
+    app: flaresolverr
+{{ end }}
+---
+
+### INGRESS
+{{ if .Values.flaresolverr.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: flaresolverr
+  labels:
+    {{- include "k8s-mediaserver.labels" . | nindent 4 }}
+  {{- with .Values.flaresolverr.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+{{ if .Values.flaresolverr.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.general.ingress_host | quote }}
+      secretName: {{ .Values.flaresolverr.ingress.tls.secretName }}
+{{ end }}
+  ingressClassName: {{ .Values.general.ingress.ingressClassName }}
+  rules:
+    - host: {{ .Values.general.ingress_host | quote }}
+      http:
+        paths:
+          - path: {{ .Values.flaresolverr.ingress.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: flaresolverr
+                port:
+                  number: {{ .Values.flaresolverr.service.port }}
+{{ if .Values.general.ingress.enableSubdomains }}
+    - host: {{ printf "%s.%s" "flaresolverr" .Values.general.ingress_host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: flaresolverr
+                port:
+                  number: {{ .Values.flaresolverr.service.port }}
+{{ end }}
+{{ end }}
+{{ end }}

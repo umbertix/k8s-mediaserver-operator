@@ -1,5 +1,4 @@
 {{- if .Values.transmission.enabled -}}
----
 ### CONFIGMAP
 ## INIT-CONTAINER
 apiVersion: v1
@@ -26,13 +25,13 @@ data:
         "blocklist-url": "http://www.example.com/blocklist",
         "cache-size-mb": 4,
         "dht-enabled": true,
-        "download-dir": "/{{ .Values.general.storage.subPaths.downloads }}/{{ .Values.general.storage.subPaths.transmission }}/complete",
+        "download-dir": "/{{ .Values.general.storage.subPaths.downloads }}",
         "download-queue-enabled": true,
         "download-queue-size": 5,
         "encryption": 1,
         "idle-seeding-limit": 30,
         "idle-seeding-limit-enabled": false,
-        "incomplete-dir": "/{{ .Values.general.storage.subPaths.downloads }}/{{ .Values.general.storage.subPaths.transmission }}/incomplete",
+        "incomplete-dir": "/{{ .Values.general.storage.subPaths.downloads }}/incomplete",
         "incomplete-dir-enabled": true,
         "lpd-enabled": false,
         "message-level": 2,
@@ -133,30 +132,46 @@ spec:
           securityContext:
             runAsUser: {{ .Values.general.puid }}
             runAsGroup: {{ .Values.general.pgid }}
+      # securityContext:
+      #   capabilities:
+      #     add: ["NET_ADMIN"]
       containers:
         - name: {{ .Chart.Name }}
           envFrom:
             - configMapRef:
                 name: transmission-config
-          image: "{{ .Values.transmission.container.image }}:{{ .Values.transmission.container.tag | default .Values.general.image_tag }}"
+          image: "haugene/transmission-openvpn"
           imagePullPolicy: Always
-          readinessProbe:
-            httpGet:
-              path: "{{ .Values.transmission.ingress.path }}/"
-              port: {{ .Values.transmission.container.port.utp }}
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 20
+          # readinessProbe:
+          #   httpGet:
+          #     path: "{{ .Values.transmission.ingress.path }}/"
+          #     port: {{ .Values.transmission.container.port.utp }}
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+          #   timeoutSeconds: 20
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
           ports:
-            - name: trans-port
-              containerPort: {{ .Values.transmission.container.port.utp }}
+            - name: http
+              containerPort: 9091
               protocol: TCP
-            - name: trans-peer-tcp
-              containerPort: {{ .Values.transmission.container.port.peer }}
-              protocol: TCP
-            - name: trans-peer-udp
-              containerPort: {{ .Values.transmission.container.port.peer }}
-              protocol: UDP
+          #   # must enable ipv6 to have njal.la work
+          #   - net.ipv6.conf.all.disable_ipv6=0
+          env:
+            # https://github.com/qdm12/gluetun-wiki/blob/main/setup/providers/mullvad.md
+            - name: TZ
+              value: "Europe/London"
+            - name: OPENVPN_PROVIDER
+              value: "{{ .Values.transmission.vpn.provider }}"
+            - name: VPN_TYPE
+              value: "{{ .Values.transmission.vpn.type }}"
+            - name: OPENVPN_USERNAME
+              value: {{ .Values.transmission.vpn.user | quote }}
+            - name: OPENVPN_PASSWORD
+              value: {{ .Values.transmission.vpn.city }}
+            - name: LOCAL_NETWORK
+              value: "10.1.216.0/24"
           volumeMounts:
           {{ if .Values.transmission.volume }}
             - name: {{ .Values.transmission.volume.name }}
@@ -170,31 +185,11 @@ spec:
               mountPath: "/downloads"
               subPath: "{{ .Values.general.storage.subPaths.downloads }}"
           {{- with .Values.transmission.resources }}
+            # - name: tunnel
+            #   mountPath: /dev/net/tun
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-        {{- if .Values.transmission.vpn.enabled }}
-        - name: gluetun
-          image: ghcr.io/qdm12/gluetun # Optionally you can use the "qmcgaw/gluetun" image as well as specify what version of Gluetun you desire
-          imagePullPolicy: Always
-          securityContext:
-            capabilities:
-              add: ["NET_ADMIN"]
-          env:
-          {{- if eq .Values.transmission.vpn.provider  `mullvad` }}
-            # https://github.com/qdm12/gluetun-wiki/blob/main/setup/providers/mullvad.md
-            - name: TZ
-              value: "Europe/London"
-            - name: VPN_SERVICE_PROVIDER
-              value: "{{ .Values.transmission.vpn.provider }}"
-            - name: VPN_TYPE
-              value: "{{ .Values.transmission.vpn.type }}"
-            - name: OPENVPN_USER
-              value: {{ .Values.transmission.vpn.user | quote }}
-            - name: SERVER_CITIES
-              value: {{ .Values.transmission.vpn.city }}
-          {{ end }}
-        {{- end }}
       volumes:
         {{ if not .Values.general.storage.customVolume }}
         - name: mediaserver-volume
@@ -209,6 +204,10 @@ spec:
           persistentVolumeClaim:
             claimName: {{ .Values.transmission.volume.name }}
         {{ end }}
+        - name: tunnel
+          hostPath:
+            path: /dev/net/tun
+            type: ""
         - name: init-files-transmission
           configMap:
             defaultMode: 493
@@ -253,114 +252,12 @@ spec:
     - port: {{ .Values.transmission.service.utp.port }}
       targetPort: {{ .Values.transmission.container.port.utp }}
       protocol: TCP
-      name: trans-port
+      name: http
 {{ if eq .Values.transmission.service.utp.type "NodePort" }}
       nodePort: {{ .Values.transmission.service.utp.nodePort }}
 {{ end }}
   selector:
     app: transmission
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: transmission-peer-tcp
-  labels:
-    {{- include "k8s-mediaserver.labels" . | nindent 4 }}
-spec:
-  type: {{ .Values.transmission.service.peer.type }}
-  ports:
-    - port: {{ .Values.transmission.service.peer.port }}
-      targetPort: {{ .Values.transmission.container.port.peer }}
-      protocol: TCP
-      name: trans-peer-tcp
-{{ if eq .Values.transmission.service.peer.type "NodePort" }}
-      nodePort: {{ .Values.transmission.service.peer.nodePort }}
-{{ end }}
-  selector:
-    app: transmission
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: transmission-peer-udp
-  labels:
-    {{- include "k8s-mediaserver.labels" . | nindent 4 }}
-spec:
-  type: {{ .Values.transmission.service.peer.type }}
-  ports:
-    - port: {{ .Values.transmission.service.peer.port }}
-      targetPort: {{ .Values.transmission.container.port.peer }}
-      protocol: UDP
-      name: trans-peer-udp
-{{ if eq .Values.transmission.service.peer.type "NodePort" }}
-      nodePort: {{ .Values.transmission.service.peer.nodePortUDP }}
-{{ end }}
-  selector:
-    app: transmission
----
-{{ if .Values.transmission.service.utp.extraLBService }}
-apiVersion: v1
-kind: Service
-metadata:
-  name: transmission-lb
-  {{- with .Values.transmission.service.utp.extraLBAnnotations }}
-  annotations:
-    {{- . | toYaml | nindent 4 }}
-  {{- end }}
-  labels:
-    {{- include "k8s-mediaserver.labels" . | nindent 4 }}
-spec:
-  type: LoadBalancer
-  ports:
-    - port: {{ .Values.transmission.service.utp.port }}
-      targetPort: {{ .Values.transmission.container.port.utp }}
-      protocol: TCP
-      name: trans-port
-  selector:
-    app: transmission
----
-{{ end }}
-{{ if .Values.transmission.service.peer.extraLBService }}
-apiVersion: v1
-kind: Service
-metadata:
-  name: transmission-lb-peer-tcp
-  {{- with .Values.transmission.service.peer.extraLBAnnotations }}
-  annotations:
-    {{- . | toYaml | nindent 4 }}
-  {{- end }}
-  labels:
-    {{- include "k8s-mediaserver.labels" . | nindent 4 }}
-spec:
-  type: LoadBalancer
-  ports:
-    - port: {{ .Values.transmission.service.peer.port }}
-      targetPort: {{ .Values.transmission.container.port.peer }}
-      protocol: TCP
-      name: trans-peer-tcp
-  selector:
-    app: transmission
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: transmission-lb-peer-udp
-  {{- with .Values.transmission.service.peer.extraLBAnnotations }}
-  annotations:
-    {{- . | toYaml | nindent 4 }}
-  {{- end }}
-  labels:
-    {{- include "k8s-mediaserver.labels" . | nindent 4 }}
-spec:
-  type: LoadBalancer
-  ports:
-    - port: {{ .Values.transmission.service.peer.port }}
-      targetPort: {{ .Values.transmission.container.port.peer }}
-      protocol: UDP
-      name: trans-peer-udp
-  selector:
-    app: transmission
-{{ end }}
 ---
 ### INGRESS
 {{ if .Values.transmission.ingress.enabled }}
