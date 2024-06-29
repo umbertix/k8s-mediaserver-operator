@@ -19,6 +19,20 @@ kind: ConfigMap
 metadata:
   name: init-sonarr-cm
 ---
+## Secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "sonarr-api-secret"
+type: Opaque
+data:
+  # retrieve the secret data using lookup function and when not exists, return an empty dictionary / map as result
+  {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "sonarr-api-secret") | default dict }}
+  {{- $secretData := (get $secretObj "data") | default dict }}
+  # set $secret to existing secret data or generate a random one when not exists
+  {{- $secret := (get $secretData "sonarr-api-secret") | default (randAlphaNum 32 | b64enc) }}
+  sonarr-api-secret: {{ $secret | quote }}
+---
 ## APPLICATION
 apiVersion: v1
 kind: ConfigMap
@@ -47,6 +61,10 @@ spec:
       labels:
         {{- include "k8s-mediaserver.selectorLabels" . | nindent 8 }}
         app: sonarr
+      annotations:
+        k8s.grafana.com/scrape: "true"
+        k8s.grafana.com/metrics-portNumber: "9707"
+        k8s.grafana.com/job: "sonarr-exporter"
     spec:
       initContainers:
         - name: config-sonarr
@@ -80,6 +98,12 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 20
             timeoutSeconds: 20
+          env:
+            - name: ApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: sonarr-api-secret
+                  key: sonarr-api-secret
           ports:
             - name: sonarr-port
               containerPort: {{ .Values.sonarr.container.port }}
@@ -106,6 +130,24 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+        - name: exportarr
+          image: ghcr.io/onedr0p/exportarr:latest
+          imagePullPolicy: Always
+          args:
+            - sonarr
+          env:
+            - name: PORT
+              value: "9707"
+            - name: URL
+              value: "http://sonarr.default.svc.cluster.local:8989"
+            - name: APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: sonarr-api-secret
+                  key: sonarr-api-secret
+          ports:
+            - name: monitoring
+              containerPort: 9707
       volumes:
         {{- if not .Values.general.storage.customVolume }}
         - name: mediaserver-volume
