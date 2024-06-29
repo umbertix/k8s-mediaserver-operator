@@ -9,14 +9,15 @@ data:
   PGID: "{{ .Values.general.pgid }}"
   PUID: "{{ .Values.general.puid }}"  
 ---
-### DEPLOYMENT
+### StatefulSet
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: jellyfin
   labels:
     {{- include "k8s-mediaserver.labels" . | nindent 4 }}
 spec:
+  serviceName: "jellyfin"
   replicas: {{ .Values.jellyfin.replicaCount }}
   selector:
     matchLabels:

@@ -34,6 +34,9 @@ general:
     ingressClassName: ""
     enableSubdomains: true
   nodeSelector: {}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: k8s-mediaserver
 
 sonarr:
   enabled: true
@@ -90,6 +93,36 @@ radarr:
   resources: {}
   volume: {}
   # name: pvc-radarr-config
+  # storageClassName: longhorn
+  # annotations: {}
+  # labels: {}
+  # accessModes: ReadWriteOnce
+  # storage: 5Gi
+  # selector: {}
+
+bazarr:
+  enabled: true
+  container:
+    image: docker.io/linuxserver/bazarr
+    nodeSelector: {}
+    port: 6767
+  service:
+    type: ClusterIP
+    port: 6767
+    nodePort:
+    # Defines an additional LB service, requires cloud provider service or MetalLB
+    extraLBService: false
+    extraLBAnnotations: {}
+  ingress:
+    enabled: true
+    annotations: {}
+    path: /bazarr
+    tls:
+      enabled: false
+      secretName: ""
+  resources: {}
+  volume: {}
+  # name: pvc-bazarr-config
   # storageClassName: longhorn
   # annotations: {}
   # labels: {}

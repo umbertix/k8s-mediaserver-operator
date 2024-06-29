@@ -113,6 +113,10 @@ spec:
       labels:
         {{- include "k8s-mediaserver.selectorLabels" . | nindent 8 }}
         app: transmission
+      annotations:
+        k8s.grafana.com/scrape: "true"
+        k8s.grafana.com/metrics-portNumber: "29091"
+        k8s.grafana.com/job: "transmission-exporter"
     spec:
       initContainers:
         - name: config-transmission
@@ -140,7 +144,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: transmission-config
-          image: "haugene/transmission-openvpn"
+          image: "{{ .Values.transmission.container.image }}:{{ .Values.transmission.container.tag | default .Values.general.image_tag }}"
           imagePullPolicy: Always
           # readinessProbe:
           #   httpGet:
@@ -184,12 +188,37 @@ spec:
             - name: mediaserver-volume
               mountPath: "/downloads"
               subPath: "{{ .Values.general.storage.subPaths.downloads }}"
+            - name: mediaserver-volume
+              mountPath: "/data/incomplete"
+              subPath: "{{ .Values.general.storage.subPaths.downloads }}/incomplete"
+            - name: mediaserver-volume
+              mountPath: "/data/completed/movies"
+              subPath: "{{ .Values.general.storage.subPaths.movies }}"
+            - name: mediaserver-volume
+              mountPath: "/data/completed/tv"
+              subPath: "{{ .Values.general.storage.subPaths.tv }}"
           {{- with .Values.transmission.resources }}
             # - name: tunnel
             #   mountPath: /dev/net/tun
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+        - name: transmission-exporter
+          image: sandrotosi/simple_transmission_exporter
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 29091
+              protocol: TCP
+          env:
+            - name: TRANSMISSION_HOST
+              value: "localhost"
+            - name: TRANSMISSION_PORT
+              value: "9091"
+            - name: TRANSMISSION_USERNAME
+              value: "admin"
+            - name: TRANSMISSION_PASSWORD
+              value: "admin"
       volumes:
         {{ if not .Values.general.storage.customVolume }}
         - name: mediaserver-volume
